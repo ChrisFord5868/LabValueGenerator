@@ -1,257 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Previous style section remains the same -->
     <meta charset="UTF-8">
     <style>
-        /* Previous styles remain unchanged */
-        [Previous styles from the last response...]
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: #fff;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #0070f3;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin: 2px;
+            font-size: 12px;
+        }
+
+        .controls button:hover {
+            background: #0051b3;
+        }
+
+        .preset-btn {
+            background: #f0f0f0 !important;
+            color: #333 !important;
+        }
+
+        .preset-btn:hover {
+            background: #ddd !important;
+        }
+
+        .lab-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .lab-table th, .lab-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .lab-table th {
+            background: #f5f5f5;
+        }
+
+        .lab-table input {
+            width: 100px;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .abnormal {
+            color: red;
+            font-weight: bold;
+        }
+
+        .category-header {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #0070f3;
+        }
+
+        .hospital-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .hospital-info {
+            text-align: right;
+            font-size: 14px;
+        }
+
+        .patient-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .patient-info div {
+            margin: 5px 0;
+        }
+
+        .report-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media print {
+            .controls { display: none; }
+            .container { 
+                box-shadow: none; 
+                padding: 0; 
+                margin: 0;
+            }
+            .lab-table input { 
+                border: none; 
+                padding: 0; 
+            }
+            body { 
+                padding: 0;
+                background: white;
+            }
+            .patient-info {
+                background: white;
+                border: 1px solid #ddd;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- Previous HTML structure remains the same until the script section -->
-    [Previous HTML from the last response...]
+    <div class="container">
+        <div class="header-section">
+            <div class="hospital-logo">
+                <svg width="50" height="50" viewBox="0 0 50 50">
+                    <rect x="10" y="20" width="30" height="20" fill="#0070f3"/>
+                    <path d="M25 10 L35 20 L15 20 Z" fill="#0070f3"/>
+                    <text x="20" y="33" fill="white" font-size="12">MC</text>
+                </svg>
+                <div>
+                    <h2 style="margin: 0; color: #0070f3;">Metropolitan Center</h2>
+                    <div style="color: #666;">Laboratory Services</div>
+                </div>
+            </div>
+            <div class="hospital-info">
+                <div>Metropolitan Medical Center</div>
+                <div>1234 Healthcare Drive</div>
+                <div>Metropolis, ST 12345</div>
+                <div>Tel: (555) 555-1234</div>
+                <div>CLIA #: 12D3456789</div>
+            </div>
+        </div>
 
+        <div class="patient-info">
+            <div><strong>Patient Name:</strong> <span id="patientName"></span></div>
+            <div><strong>DOB:</strong> <span id="patientDOB"></span></div>
+            <div><strong>Medical Record #:</strong> <span id="mrn"></span></div>
+            <div><strong>Ordering Provider:</strong> <span id="provider"></span></div>
+            <div><strong>Collection Date/Time:</strong> <span id="collectionDate"></span></div>
+            <div><strong>Report Date/Time:</strong> <span id="reportDate"></span></div>
+        </div>
+
+        <table class="lab-table">
+            <thead>
+                <tr>
+                    <th>Test</th>
+                    <th>Result</th>
+                    <th>Reference Range</th>
+                    <th>Units</th>
+                </tr>
+            </thead>
+            <tbody id="labTableBody">
+            </tbody>
+        </table>
+
+        <div class="report-footer">
+            <div class="footer-grid">
+                <div>
+                    <strong>Laboratory Director:</strong><br>
+                    Jane Smith, MD, PhD<br>
+                    Board Certified in Clinical Pathology
+                </div>
+                <div>
+                    <strong>Testing Location:</strong><br>
+                    Metropolitan Medical Center<br>
+                    Main Laboratory, Room 203
+                </div>
+                <div>
+                    <strong>Report Status:</strong><br>
+                    Final Report<br>
+                    Electronically Signed Out
+                </div>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                This report contains confidential health information protected by state and federal law.
+                Unauthorized disclosure is prohibited by law.
+            </p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="preset-btn" onclick="loadPreset('normal')">Normal</button>
+        <button class="preset-btn" onclick="loadPreset('sepsis')">Sepsis</button>
+        <button class="preset-btn" onclick="loadPreset('dka')">DKA</button>
+        <button class="preset-btn" onclick="loadPreset('asthma')">Asthma</button>
+        <button class="preset-btn" onclick="loadPreset('pneumonia')">Pneumonia</button>
+        <button class="preset-btn" onclick="loadPreset('copd')">COPD</button>
+        <button class="preset-btn" onclick="loadPreset('chf')">CHF</button>
+        <button onclick="generateRandomVariation()">Vary</button>
+        <button onclick="randomizePatient()">New Patient</button>
+        <button onclick="window.print()">Print</button>
+    </div>
     <script>
-        const labData = {
-            'Complete Blood Count': {
-                'WBC': { normal: '7.2', range: '4.5-11.0', units: 'K/µL', precision: 1 },
-                'RBC': { normal: '4.8', range: '4.5-5.5', units: 'M/µL', precision: 1 },
-                'Hemoglobin': { normal: '14', range: '13.5-17.5', units: 'g/dL', precision: 0 },
-                'Hematocrit': { normal: '42', range: '41-50', units: '%', precision: 0 },
-                'Platelets': { normal: '250', range: '150-450', units: 'K/µL', precision: 0 },
-                'MCV': { normal: '88', range: '80-100', units: 'fL', precision: 0 },
-                'MCH': { normal: '30', range: '27-33', units: 'pg', precision: 0 },
-                'MCHC': { normal: '34', range: '32-36', units: 'g/dL', precision: 0 }
-            },
-            'Basic Metabolic Panel': {
-                'Sodium': { normal: '140', range: '135-145', units: 'mEq/L', precision: 0 },
-                'Potassium': { normal: '4.0', range: '3.5-5.0', units: 'mEq/L', precision: 1 },
-                'Chloride': { normal: '102', range: '96-106', units: 'mEq/L', precision: 0 },
-                'CO2': { normal: '24', range: '22-29', units: 'mEq/L', precision: 0 },
-                'BUN': { normal: '15', range: '7-20', units: 'mg/dL', precision: 0 },
-                'Creatinine': { normal: '0.9', range: '0.6-1.2', units: 'mg/dL', precision: 1 },
-                'Glucose': { normal: '85', range: '70-100', units: 'mg/dL', precision: 0 },
-                'Calcium': { normal: '9.5', range: '8.5-10.5', units: 'mg/dL', precision: 1 }
-            },
-            'Arterial Blood Gas': {
-                'pH': { normal: '7.40', range: '7.35-7.45', units: '', precision: 2 },
-                'pCO2': { normal: '40', range: '35-45', units: 'mmHg', precision: 0 },
-                'pO2': { normal: '95', range: '80-100', units: 'mmHg', precision: 0 },
-                'HCO3': { normal: '24', range: '22-26', units: 'mEq/L', precision: 0 },
-                'O2 Saturation': { normal: '98', range: '95-100', units: '%', precision: 0 },
-                'Base Excess': { normal: '0', range: '-2-2', units: 'mEq/L', precision: 0 }
-            },
-            'Cardiac Markers': {
-                'Troponin I': { normal: '0.02', range: '0.00-0.04', units: 'ng/mL', precision: 2 },
-                'BNP': { normal: '50', range: '0-100', units: 'pg/mL', precision: 0 },
-                'CK-MB': { normal: '3.0', range: '0.0-5.0', units: 'ng/mL', precision: 1 }
-            },
-            'Liver Function Tests': {
-                'ALT': { normal: '30', range: '7-56', units: 'U/L', precision: 0 },
-                'AST': { normal: '25', range: '10-40', units: 'U/L', precision: 0 },
-                'ALP': { normal: '70', range: '44-147', units: 'U/L', precision: 0 },
-                'Total Bilirubin': { normal: '0.8', range: '0.3-1.2', units: 'mg/dL', precision: 1 },
-                'Albumin': { normal: '4.0', range: '3.4-5.4', units: 'g/dL', precision: 1 },
-                'Total Protein': { normal: '7.0', range: '6.0-8.3', units: 'g/dL', precision: 1 }
-            },
-            'Coagulation Studies': {
-                'PT': { normal: '12', range: '11-13.5', units: 'sec', precision: 0 },
-                'INR': { normal: '1.0', range: '0.9-1.1', units: '', precision: 1 },
-                'PTT': { normal: '30', range: '25-35', units: 'sec', precision: 0 }
-            }
-        };
-
-        const presets = {
-            normal: {},
-            sepsis: {
-                'WBC': '22.5',
-                'Platelets': '90',
-                'Lactate': '4.2',
-                'Creatinine': '2.1',
-                'BUN': '45',
-                'INR': '1.8'
-            },
-            dka: {
-                'Glucose': '450',
-                'pH': '7.21',
-                'CO2': '12',
-                'Potassium': '5.8',
-                'Anion Gap': '28'
-            },
-            asthma: {
-                'pH': '7.47',
-                'pCO2': '30',
-                'pO2': '65',
-                'O2 Saturation': '92'
-            },
-            pneumonia: {
-                'WBC': '18.5',
-                'O2 Saturation': '88',
-                'pO2': '58'
-            },
-            copd: {
-                'pH': '7.32',
-                'pCO2': '55',
-                'HCO3': '32',
-                'O2 Saturation': '85'
-            },
-            chf: {
-                'BNP': '850',
-                'Creatinine': '1.8',
-                'pO2': '75',
-                'O2 Saturation': '89'
-            }
-        };
-
-        function formatValue(value, precision) {
-            return Number(value).toFixed(precision);
+    const labData = {
+        'Complete Blood Count': {
+            'WBC': { normal: '7.2', range: '4.5-11.0', units: 'K/µL', precision: 1 },
+            'RBC': { normal: '4.8', range: '4.5-5.5', units: 'M/µL', precision: 1 },
+            'Hemoglobin': { normal: '14', range: '13.5-17.5', units: 'g/dL', precision: 0 },
+            'Hematocrit': { normal: '42', range: '41-50', units: '%', precision: 0 },
+            'Platelets': { normal: '250', range: '150-450', units: 'K/µL', precision: 0 },
+            'MCV': { normal: '88', range: '80-100', units: 'fL', precision: 0 },
+            'MCH': { normal: '30', range: '27-33', units: 'pg', precision: 0 },
+            'MCHC': { normal: '34', range: '32-36', units: 'g/dL', precision: 0 }
+        },
+        'Basic Metabolic Panel': {
+            'Sodium': { normal: '140', range: '135-145', units: 'mEq/L', precision: 0 },
+            'Potassium': { normal: '4.0', range: '3.5-5.0', units: 'mEq/L', precision: 1 },
+            'Chloride': { normal: '102', range: '96-106', units: 'mEq/L', precision: 0 },
+            'CO2': { normal: '24', range: '22-29', units: 'mEq/L', precision: 0 },
+            'BUN': { normal: '15', range: '7-20', units: 'mg/dL', precision: 0 },
+            'Creatinine': { normal: '0.9', range: '0.6-1.2', units: 'mg/dL', precision: 1 },
+            'Glucose': { normal: '85', range: '70-100', units: 'mg/dL', precision: 0 },
+            'Calcium': { normal: '9.5', range: '8.5-10.5', units: 'mg/dL', precision: 1 }
+        },
+        'Arterial Blood Gas': {
+            'pH': { normal: '7.40', range: '7.35-7.45', units: '', precision: 2 },
+            'pCO2': { normal: '40', range: '35-45', units: 'mmHg', precision: 0 },
+            'pO2': { normal: '95', range: '80-100', units: 'mmHg', precision: 0 },
+            'HCO3': { normal: '24', range: '22-26', units: 'mEq/L', precision: 0 },
+            'O2 Saturation': { normal: '98', range: '95-100', units: '%', precision: 0 },
+            'Base Excess': { normal: '0', range: '-2-2', units: 'mEq/L', precision: 0 }
+        },
+        'Cardiac Markers': {
+            'Troponin I': { normal: '0.02', range: '0.00-0.04', units: 'ng/mL', precision: 2 },
+            'BNP': { normal: '50', range: '0-100', units: 'pg/mL', precision: 0 },
+            'CK-MB': { normal: '3.0', range: '0.0-5.0', units: 'ng/mL', precision: 1 }
+        },
+        'Liver Function Tests': {
+            'ALT': { normal: '30', range: '7-56', units: 'U/L', precision: 0 },
+            'AST': { normal: '25', range: '10-40', units: 'U/L', precision: 0 },
+            'ALP': { normal: '70', range: '44-147', units: 'U/L', precision: 0 },
+            'Total Bilirubin': { normal: '0.8', range: '0.3-1.2', units: 'mg/dL', precision: 1 },
+            'Albumin': { normal: '4.0', range: '3.4-5.4', units: 'g/dL', precision: 1 },
+            'Total Protein': { normal: '7.0', range: '6.0-8.3', units: 'g/dL', precision: 1 }
+        },
+        'Coagulation Studies': {
+            'PT': { normal: '12', range: '11-13.5', units: 'sec', precision: 0 },
+            'INR': { normal: '1.0', range: '0.9-1.1', units: '', precision: 1 },
+            'PTT': { normal: '30', range: '25-35', units: 'sec', precision: 0 }
         }
+    };
 
-        function generateRandomVariation() {
-            const inputs = document.querySelectorAll('.lab-table input');
-            inputs.forEach(input => {
-                const test = input.parentElement.parentElement.cells[0].textContent;
-                let precision = 0;
-                
-                // Find the precision in the nested structure
-                for (const category of Object.values(labData)) {
-                    if (test in category) {
-                        precision = category[test].precision;
-                        break;
-                    }
-                }
-                
-                const currentValue = parseFloat(input.value);
-                const variation = (Math.random() - 0.5) * 0.1 * currentValue;
-                input.value = formatValue(currentValue + variation, precision);
-                checkAbnormal(input);
-            });
+    const presets = {
+        normal: {},
+        sepsis: {
+            'WBC': '22.5',
+            'Platelets': '90',
+            'Creatinine': '2.1',
+            'BUN': '45',
+            'INR': '1.8'
+        },
+        dka: {
+            'Glucose': '450',
+            'pH': '7.21',
+            'CO2': '12',
+            'Potassium': '5.8'
+        },
+        asthma: {
+            'pH': '7.47',
+            'pCO2': '30',
+            'pO2': '65',
+            'O2 Saturation': '92'
+        },
+        pneumonia: {
+            'WBC': '18.5',
+            'O2 Saturation': '88',
+            'pO2': '58'
+        },
+        copd: {
+            'pH': '7.32',
+            'pCO2': '55',
+            'HCO3': '32',
+            'O2 Saturation': '85'
+        },
+        chf: {
+            'BNP': '850',
+            'Creatinine': '1.8',
+            'pO2': '75',
+            'O2 Saturation': '89'
         }
+    };
 
-        function initializeTable() {
-            const tbody = document.getElementById('labTableBody');
-            tbody.innerHTML = '';
+    const firstNames = ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Charles', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
+    const providers = ["Dr. Sarah Johnson", "Dr. Michael Chen", "Dr. Robert Williams", "Dr. Emily Rodriguez", "Dr. David Kim"];
 
-            for (const [category, tests] of Object.entries(labData)) {
-                const headerRow = document.createElement('tr');
-                headerRow.innerHTML = `<td colspan="4" class="category-header">${category}</td>`;
-                tbody.appendChild(headerRow);
+    function formatValue(value, precision) {
+        return Number(value).toFixed(precision);
+    }
 
-                for (const [test, data] of Object.entries(tests)) {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${test}</td>
-                        <td><input type="text" value="${formatValue(data.normal, data.precision)}" onchange="checkAbnormal(this)"></td>
-                        <td>${data.range}</td>
-                        <td>${data.units}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            }
-
-            updateDates();
-            randomizePatient();
-        }
-
-        function loadPreset(preset) {
-            const presetValues = presets[preset];
-            const tbody = document.getElementById('labTableBody');
-            
-            // Reset to normal values first
-            initializeTable();
-
-            // Apply preset values
-            for (const [test, value] of Object.entries(presetValues)) {
-                const rows = tbody.getElementsByTagName('tr');
-                for (const row of rows) {
-                    if (row.cells[0].textContent === test) {
-                        const input = row.cells[1].querySelector('input');
-                        if (input) {
-                            input.value = value;
-                            checkAbnormal(input);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        function checkAbnormal(input) {
+    function generateRandomVariation() {
+        const inputs = document.querySelectorAll('.lab-table input');
+        inputs.forEach(input => {
             const test = input.parentElement.parentElement.cells[0].textContent;
-            let range;
+            let precision = 0;
             
-            // Find the range in the nested structure
+            // Find the precision in the nested structure
             for (const category of Object.values(labData)) {
                 if (test in category) {
-                    range = category[test].range;
+                    precision = category[test].precision;
                     break;
                 }
             }
             
-            if (range) {
-                const [min, max] = range.split('-').map(Number);
-                const value = parseFloat(input.value);
-                
-                if (value < min || value > max) {
-                    input.parentElement.classList.add('abnormal');
-                } else {
-                    input.parentElement.classList.remove('abnormal');
-                }
+            const currentValue = parseFloat(input.value);
+            const variation = (Math.random() - 0.5) * 0.1 * currentValue;
+            input.value = formatValue(currentValue + variation, precision);
+            checkAbnormal(input);
+        });
+    }
+
+    function initializeTable() {
+        const tbody = document.getElementById('labTableBody');
+        tbody.innerHTML = '';
+
+        for (const [category, tests] of Object.entries(labData)) {
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = `<td colspan="4" class="category-header">${category}</td>`;
+            tbody.appendChild(headerRow);
+
+            for (const [test, data] of Object.entries(tests)) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${test}</td>
+                    <td><input type="text" value="${formatValue(data.normal, data.precision)}" onchange="checkAbnormal(this)"></td>
+                    <td>${data.range}</td>
+                    <td>${data.units}</td>
+                `;
+                tbody.appendChild(tr);
             }
         }
 
-        function formatDateTime(date) {
-            return date.toLocaleString('en-US', { 
-                year: 'numeric', 
-                month: '2-digit', 
-                day: '2-digit',
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: true 
-            });
-        }
+        updateDates();
+        randomizePatient();
+    }
 
-        function generateMRN() {
-            return Math.floor(Math.random() * 9000000) + 1000000;
-        }
-
-        const firstNames = ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Charles', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'];
-        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
-        const providers = ["Dr. Sarah Johnson", "Dr. Michael Chen", "Dr. Robert Williams", "Dr. Emily Rodriguez", "Dr. David Kim"];
-
-        function randomDate(start, end) {
-            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-        }
-
-        function randomizePatient() {
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            document.getElementById('patientName').textContent = `${lastName}, ${firstName}`;
-
-            const end = new Date();
-            end.setFullYear(end.getFullYear() - 18);
-            const start = new Date();
-            start.setFullYear(start.getFullYear() - 85);
-            const dob = randomDate(start, end);
-            document.getElementById('patientDOB').textContent = dob.toLocaleDateString();
-
-            document.getElementById('mrn').textContent = generateMRN();
-            document.getElementById('provider').textContent = providers[Math.floor(Math.random() * providers.length)];
-
-            updateDates();
-        }
-
-        function updateDates() {
-            const now = new Date();
-            const collectionDate = new Date(now - 24 * 60 * 60 * 1000); // Yesterday
-            
-            document.getElementById('collectionDate').textContent = formatDateTime(collectionDate);
-            document.getElementById('reportDate').textContent = formatDateTime(now);
-        }
-
-        // Initialize on load
+    function loadPreset(preset) {
+        const presetValues = presets[preset];
+        const tbody = document.getElementById('labTableBody');
+        
+        // Reset to normal values first
         initializeTable();
-    </script>
+
+        // Apply preset values
+        for (const [test, value] of Object.entries(presetValues)) {
+            const rows = tbody.getElementsByTagName('tr');
+            for (const row of rows) {
+                if (row.cells[0].textContent === test) {
+                    const input = row.cells[1].querySelector('input');
+                    if (input) {
+                        input.value = value;
+                        checkAbnormal(input);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    function checkAbnormal(input) {
+        const test = input.parentElement.parentElement.cells[0].textContent;
+        let range;
+        
+        // Find the range in the nested structure
+        for (const category of Object.values(labData)) {
+            if (test in category) {
+                range = category[test].range;
+                break;
+            }
+        }
+        
+        if (range) {
+            const [min, max] = range.split('-').map(Number);
+            const value = parseFloat(input.value);
+            
+            if (value < min || value > max) {
+                input.parentElement.classList.add('abnormal');
+            } else {
+                input.parentElement.classList.remove('abnormal');
+            }
+        }
+    }
+
+    function formatDateTime(date) {
+        return date.toLocaleString('en-US', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit',
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        });
+    }
+
+    function generateMRN() {
+        return Math.floor(Math.random() * 9000000) + 1000000;
+    }
+
+    function randomDate(start, end) {
+        return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    }
+
+    function randomizePatient() {
+        const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+        const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+        document.getElementById('patientName').textContent = `${lastName}, ${firstName}`;
+
+        const end = new Date();
+        end.setFullYear(end.getFullYear() - 18);
+        const start = new Date();
+        start.setFullYear(start.getFullYear() - 85);
+        const dob = randomDate(start, end);
+        document.getElementById('patientDOB').textContent = dob.toLocaleDateString();
+
+        document.getElementById('mrn').textContent = generateMRN();
+        document.getElementById('provider').textContent = providers[Math.floor(Math.random() * providers.length)];
+
+        updateDates();
+    }
+
+    function updateDates() {
+        const now = new Date();
+        const collectionDate = new Date(now - 24 * 60 * 60 * 1000); // Yesterday
+        
+        document.getElementById('collectionDate').textContent = formatDateTime(collectionDate);
+        document.getElementById('reportDate').textContent = formatDateTime(now);
+    }
+
+    // Initialize on load
+    initializeTable();
+</script>
 </body>
 </html>
