@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lab Value Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        .category-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #007bff;
+        }
+        .abnormal {
+            color: red;
+        }
+        @media print {
+            .controls {
+                display: none;
+            }
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lab Value Generator</h1>
+        <div class="controls">
+            <select id="conditionSelect">
+                <option value="normal">Normal Values</option>
+                <option value="sepsis">Sepsis</option>
+                <option value="diabetesDka">DKA</option>
+                <option value="asthma">Asthma</option>
+                <option value="pneumonia">Pneumonia</option>
+                <option value="copd">COPD</option>
+                <option value="chf">CHF</option>
+            </select>
+            <button onclick="generateLabs()">Generate Labs</button>
+            <button onclick="window.print()">Print Report</button>
+        </div>
+        <div id="labResults"></div>
+    </div>
+
+    <script>
+        const labCategories = {
+            "Blood Gas": {
+                ph: { range: "7.35-7.45", unit: "" },
+                paco2: { range: "35-45", unit: "mmHg" },
+                pao2: { range: "80-100", unit: "mmHg" },
+                hco3: { range: "22-26", unit: "mEq/L" },
+                lactate: { range: "0.5-2.2", unit: "mmol/L" }
+            },
+            "Complete Blood Count": {
+                wbc: { range: "4.5-11.0", unit: "K/µL" },
+                hemoglobin: { range: "13.5-17.5", unit: "g/dL" },
+                platelets: { range: "150-450", unit: "K/µL" }
+            },
+            "Basic Metabolic Panel": {
+                sodium: { range: "135-145", unit: "mEq/L" },
+                potassium: { range: "3.5-5.0", unit: "mEq/L" },
+                chloride: { range: "96-106", unit: "mEq/L" },
+                co2: { range: "23-29", unit: "mEq/L" },
+                bun: { range: "7-20", unit: "mg/dL" },
+                creatinine: { range: "0.6-1.2", unit: "mg/dL" },
+                glucose: { range: "70-100", unit: "mg/dL" },
+                magnesium: { range: "1.7-2.2", unit: "mg/dL" }
+            }
+        };
+
+        function generateRandomNumber(min, max) {
+            return Number((Math.random() * (max - min) + min).toFixed(1));
+        }
+
+        function generateLabs() {
+            const condition = document.getElementById('conditionSelect').value;
+            let results = {};
+
+            // Generate base values
+            Object.entries(labCategories).forEach(([category, tests]) => {
+                Object.entries(tests).forEach(([test, details]) => {
+                    const [min, max] = details.range.replace(/[<>]/g, '').split('-').map(Number);
+                    results[test] = generateRandomNumber(min, max);
+                });
+            });
+
+            // Modify based on condition
+            switch(condition) {
+                case 'sepsis':
+                    results.lactate = generateRandomNumber(4.0, 12.0);
+                    results.wbc = generateRandomNumber(15.0, 30.0);
+                    results.bun = generateRandomNumber(40, 80);
+                    break;
+                case 'diabetesDka':
+                    results.glucose = generateRandomNumber(300, 600);
+                    results.ph = generateRandomNumber(7.1, 7.3);
+                    results.hco3 = generateRandomNumber(8, 15);
+                    break;
+                case 'asthma':
+                    results.ph = generateRandomNumber(7.45, 7.50);
+                    results.paco2 = generateRandomNumber(25, 35);
+                    results.pao2 = generateRandomNumber(60, 75);
+                    break;
+                case 'pneumonia':
+                    results.wbc = generateRandomNumber(12.0, 20.0);
+                    results.pao2 = generateRandomNumber(60, 75);
+                    break;
+                case 'copd':
+                    results.ph = generateRandomNumber(7.30, 7.35);
+                    results.paco2 = generateRandomNumber(45, 65);
+                    results.hco3 = generateRandomNumber(26, 32);
+                    results.pao2 = generateRandomNumber(50, 65);
+                    break;
+                case 'chf':
+                    results.pao2 = generateRandomNumber(60, 75);
+                    results.bnp = generateRandomNumber(500, 2000);
+                    results.sodium = generateRandomNumber(128, 134);
+                    break;
+            }
+
+            displayResults(results);
+        }
+
+        function displayResults(results) {
+            const container = document.getElementById('labResults');
+            container.innerHTML = '<div class="patient-info">' +
+                '<p><strong>Patient:</strong> SIMULATION PATIENT</p>' +
+                '<p><strong>Date:</strong> ' + new Date().toLocaleDateString() + '</p>' +
+                '<p><strong>Time:</strong> ' + new Date().toLocaleTimeString() + '</p>' +
+                '</div>';
+
+            Object.entries(labCategories).forEach(([category, tests]) => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.innerHTML = `<div class="category-title">${category}</div>`;
+                
+                const table = document.createElement('table');
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Result</th>
+                            <th>Flag</th>
+                            <th>Units</th>
+                            <th>Reference Range</th>
+                        </tr>
+                    </thead>
+                `;
+
+                const tbody = document.createElement('tbody');
+                Object.entries(tests).forEach(([test, details]) => {
+                    const value = results[test];
+                    const [min, max] = details.range.replace(/[<>]/g, '').split('-').map(Number);
+                    const isAbnormal = min && max && (value < min || value > max);
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${test.replace(/_/g, ' ').toUpperCase()}</td>
+                            <td class="${isAbnormal ? 'abnormal' : ''}">${value.toFixed(1)}</td>
+                            <td class="abnormal">${isAbnormal ? (value < min ? 'L' : 'H') : ''}</td>
+                            <td>${details.unit}</td>
+                            <td>${details.range}</td>
+                        </tr>
+                    `;
+                });
+
+                table.appendChild(tbody);
+                categoryDiv.appendChild(table);
+                container.appendChild(categoryDiv);
+            });
+        }
+    </script>
+</body>
+</html>
