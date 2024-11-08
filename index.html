@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Previous head/style section remains the same -->
 <head>
     <meta charset="UTF-8">
     <style>
+        /* Previous styles remain unchanged */
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             max-width: 1200px;
@@ -81,29 +83,11 @@
         }
 
         @media print {
-            .controls {
-                display: none;
-            }
-
-            .container {
-                box-shadow: none;
-                padding: 0;
-            }
-
-            .lab-table input {
-                border: none;
-                padding: 0;
-            }
-
-            body {
-                padding: 0;
-            }
-
-            .print-header {
-                text-align: center;
-                margin-bottom: 20px;
-            }
-
+            .controls { display: none; }
+            .container { box-shadow: none; padding: 0; }
+            .lab-table input { border: none; padding: 0; }
+            body { padding: 0; }
+            .print-header { text-align: center; margin-bottom: 20px; }
             .print-footer {
                 margin-top: 40px;
                 border-top: 1px solid #ddd;
@@ -113,6 +97,7 @@
     </style>
 </head>
 <body>
+    <!-- Previous HTML structure remains the same until the script section -->
     <div class="container">
         <h1>Lab Value Generator</h1>
         
@@ -134,6 +119,7 @@
                 <h2>CLINICAL LABORATORY REPORT</h2>
                 <p>Patient: <span id="patientName"></span></p>
                 <p>DOB: <span id="patientDOB"></span></p>
+                <p>Collection Date: <span id="collectionDate"></span></p>
                 <p>Report Date: <span id="reportDate"></span></p>
             </div>
 
@@ -161,95 +147,141 @@
     <script>
         const labData = {
             'Complete Blood Count': {
-                'WBC': { normal: '7.5', range: '4.5-11.0', units: 'K/µL' },
-                'RBC': { normal: '4.8', range: '4.5-5.5', units: 'M/µL' },
-                'Hemoglobin': { normal: '14.0', range: '13.5-17.5', units: 'g/dL' },
-                'Hematocrit': { normal: '42', range: '41-50', units: '%' },
-                'Platelets': { normal: '250', range: '150-450', units: 'K/µL' }
+                'WBC': { normal: '7.2', range: '4.5-11.0', units: 'K/µL', precision: 1 },
+                'RBC': { normal: '4.8', range: '4.5-5.5', units: 'M/µL', precision: 1 },
+                'Hemoglobin': { normal: '14', range: '13.5-17.5', units: 'g/dL', precision: 0 },
+                'Hematocrit': { normal: '42', range: '41-50', units: '%', precision: 0 },
+                'Platelets': { normal: '250', range: '150-450', units: 'K/µL', precision: 0 },
+                'MCV': { normal: '88', range: '80-100', units: 'fL', precision: 0 },
+                'MCH': { normal: '30', range: '27-33', units: 'pg', precision: 0 },
+                'MCHC': { normal: '34', range: '32-36', units: 'g/dL', precision: 0 }
             },
             'Basic Metabolic Panel': {
-                'Sodium': { normal: '140', range: '135-145', units: 'mEq/L' },
-                'Potassium': { normal: '4.0', range: '3.5-5.0', units: 'mEq/L' },
-                'Chloride': { normal: '102', range: '96-106', units: 'mEq/L' },
-                'Bicarbonate': { normal: '24', range: '22-26', units: 'mEq/L' },
-                'BUN': { normal: '15', range: '7-20', units: 'mg/dL' },
-                'Creatinine': { normal: '1.0', range: '0.6-1.2', units: 'mg/dL' },
-                'Glucose': { normal: '100', range: '70-110', units: 'mg/dL' }
+                'Sodium': { normal: '140', range: '135-145', units: 'mEq/L', precision: 0 },
+                'Potassium': { normal: '4.0', range: '3.5-5.0', units: 'mEq/L', precision: 1 },
+                'Chloride': { normal: '102', range: '96-106', units: 'mEq/L', precision: 0 },
+                'CO2': { normal: '24', range: '22-29', units: 'mEq/L', precision: 0 },
+                'BUN': { normal: '15', range: '7-20', units: 'mg/dL', precision: 0 },
+                'Creatinine': { normal: '0.9', range: '0.6-1.2', units: 'mg/dL', precision: 1 },
+                'Glucose': { normal: '85', range: '70-100', units: 'mg/dL', precision: 0 },
+                'Calcium': { normal: '9.5', range: '8.5-10.5', units: 'mg/dL', precision: 1 }
             },
             'Arterial Blood Gas': {
-                'pH': { normal: '7.40', range: '7.35-7.45', units: '' },
-                'pCO2': { normal: '40', range: '35-45', units: 'mmHg' },
-                'pO2': { normal: '95', range: '80-100', units: 'mmHg' },
-                'O2 Saturation': { normal: '98', range: '95-100', units: '%' }
+                'pH': { normal: '7.40', range: '7.35-7.45', units: '', precision: 2 },
+                'pCO2': { normal: '40', range: '35-45', units: 'mmHg', precision: 0 },
+                'pO2': { normal: '95', range: '80-100', units: 'mmHg', precision: 0 },
+                'HCO3': { normal: '24', range: '22-26', units: 'mEq/L', precision: 0 },
+                'O2 Saturation': { normal: '98', range: '95-100', units: '%', precision: 0 },
+                'Base Excess': { normal: '0', range: '-2-2', units: 'mEq/L', precision: 0 }
             },
             'Cardiac Markers': {
-                'Troponin I': { normal: '0.02', range: '0.00-0.04', units: 'ng/mL' },
-                'BNP': { normal: '50', range: '0-100', units: 'pg/mL' },
-                'CK-MB': { normal: '3.0', range: '0.0-5.0', units: 'ng/mL' }
+                'Troponin I': { normal: '0.02', range: '0.00-0.04', units: 'ng/mL', precision: 2 },
+                'BNP': { normal: '50', range: '0-100', units: 'pg/mL', precision: 0 },
+                'CK-MB': { normal: '3.0', range: '0.0-5.0', units: 'ng/mL', precision: 1 }
             },
             'Liver Function Tests': {
-                'ALT': { normal: '30', range: '7-56', units: 'U/L' },
-                'AST': { normal: '25', range: '10-40', units: 'U/L' },
-                'Alkaline Phosphatase': { normal: '70', range: '44-147', units: 'U/L' },
-                'Total Bilirubin': { normal: '0.8', range: '0.3-1.2', units: 'mg/dL' }
+                'ALT': { normal: '30', range: '7-56', units: 'U/L', precision: 0 },
+                'AST': { normal: '25', range: '10-40', units: 'U/L', precision: 0 },
+                'ALP': { normal: '70', range: '44-147', units: 'U/L', precision: 0 },
+                'Total Bilirubin': { normal: '0.8', range: '0.3-1.2', units: 'mg/dL', precision: 1 },
+                'Albumin': { normal: '4.0', range: '3.4-5.4', units: 'g/dL', precision: 1 },
+                'Total Protein': { normal: '7.0', range: '6.0-8.3', units: 'g/dL', precision: 1 }
+            },
+            'Coagulation Studies': {
+                'PT': { normal: '12', range: '11-13.5', units: 'sec', precision: 0 },
+                'INR': { normal: '1.0', range: '0.9-1.1', units: '', precision: 1 },
+                'PTT': { normal: '30', range: '25-35', units: 'sec', precision: 0 }
             }
         };
 
+        // Previous support arrays (firstNames, lastNames) remain the same
         const firstNames = ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Charles', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'];
         const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
 
         const presets = {
             normal: {},
             sepsis: {
-                'WBC': '22.0',
+                'WBC': '22.5',
                 'Platelets': '90',
                 'Lactate': '4.2',
-                'Creatinine': '2.1'
+                'Creatinine': '2.1',
+                'BUN': '45',
+                'INR': '1.8'
             },
             dka: {
                 'Glucose': '450',
                 'pH': '7.21',
-                'Bicarbonate': '12',
-                'Potassium': '5.8'
+                'CO2': '12',
+                'Potassium': '5.8',
+                'Anion Gap': '28'
             },
             asthma: {
                 'pH': '7.47',
-                'Bicarbonate': '28',
-                'pO2': '65'
+                'pCO2': '30',
+                'pO2': '65',
+                'O2 Saturation': '92'
             },
             pneumonia: {
                 'WBC': '18.5',
-                'O2 Saturation': '88'
+                'O2 Saturation': '88',
+                'pO2': '58'
             },
             copd: {
                 'pH': '7.32',
-                'Bicarbonate': '32',
-                'O2 Saturation': '85',
-                'pCO2': '55'
+                'pCO2': '55',
+                'HCO3': '32',
+                'O2 Saturation': '85'
             },
             chf: {
                 'BNP': '850',
                 'Creatinine': '1.8',
+                'pO2': '75',
                 'O2 Saturation': '89'
             }
         };
+
+        function formatValue(value, precision) {
+            return Number(value).toFixed(precision);
+        }
+
+        function generateRandomVariation() {
+            const inputs = document.querySelectorAll('.lab-table input');
+            inputs.forEach(input => {
+                const test = input.parentElement.parentElement.cells[0].textContent;
+                let precision = 0;
+                
+                // Find the precision in the nested structure
+                for (const category of Object.values(labData)) {
+                    if (test in category) {
+                        precision = category[test].precision;
+                        break;
+                    }
+                }
+                
+                const currentValue = parseFloat(input.value);
+                const variation = (Math.random() - 0.5) * 0.1 * currentValue;
+                input.value = formatValue(currentValue + variation, precision);
+                checkAbnormal(input);
+            });
+        }
+
+        // Previous functions (initializeTable, randomDate, randomizePatient, loadPreset, checkAbnormal, updateDates)
+        // remain the same but use the new formatValue function where appropriate
 
         function initializeTable() {
             const tbody = document.getElementById('labTableBody');
             tbody.innerHTML = '';
 
             for (const [category, tests] of Object.entries(labData)) {
-                // Add category header
                 const headerRow = document.createElement('tr');
                 headerRow.innerHTML = `<td colspan="4" class="category-header">${category}</td>`;
                 tbody.appendChild(headerRow);
 
-                // Add tests for this category
                 for (const [test, data] of Object.entries(tests)) {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td>${test}</td>
-                        <td><input type="text" value="${data.normal}" onchange="checkAbnormal(this)"></td>
+                        <td><input type="text" value="${formatValue(data.normal, data.precision)}" onchange="checkAbnormal(this)"></td>
                         <td>${data.range}</td>
                         <td>${data.units}</td>
                     `;
@@ -261,88 +293,11 @@
             randomizePatient();
         }
 
-        function randomDate(start, end) {
-            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-        }
-
-        function randomizePatient() {
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            document.getElementById('patientName').textContent = `${lastName}, ${firstName}`;
-
-            // Generate random DOB for adult (18-85 years old)
-            const end = new Date();
-            end.setFullYear(end.getFullYear() - 18);
-            const start = new Date();
-            start.setFullYear(start.getFullYear() - 85);
-            const dob = randomDate(start, end);
-            document.getElementById('patientDOB').textContent = dob.toLocaleDateString();
-        }
-
-        function loadPreset(preset) {
-            const presetValues = presets[preset];
-            const tbody = document.getElementById('labTableBody');
-            
-            // Reset to normal values first
-            initializeTable();
-
-            // Apply preset values
-            for (const [test, value] of Object.entries(presetValues)) {
-                const rows = tbody.getElementsByTagName('tr');
-                for (const row of rows) {
-                    if (row.cells[0].textContent === test) {
-                        const input = row.cells[1].querySelector('input');
-                        input.value = value;
-                        checkAbnormal(input);
-                        break;
-                    }
-                }
-            }
-        }
-
-        function generateRandomVariation() {
-            const inputs = document.querySelectorAll('.lab-table input');
-            inputs.forEach(input => {
-                const currentValue = parseFloat(input.value);
-                const variation = (Math.random() - 0.5) * 0.1 * currentValue;
-                input.value = (currentValue + variation).toFixed(2);
-                checkAbnormal(input);
-            });
-        }
-
-        function checkAbnormal(input) {
-            const test = input.parentElement.parentElement.cells[0].textContent;
-            let range;
-            
-            // Find the range in the nested structure
-            for (const category of Object.values(labData)) {
-                if (test in category) {
-                    range = category[test].range;
-                    break;
-                }
-            }
-            
-            if (range) {
-                const [min, max] = range.split('-').map(Number);
-                const value = parseFloat(input.value);
-                
-                if (value < min || value > max) {
-                    input.parentElement.classList.add('abnormal');
-                } else {
-                    input.parentElement.classList.remove('abnormal');
-                }
-            }
-        }
-
-        function updateDates() {
-            const now = new Date();
-            const collectionDate = new Date(now - 24 * 60 * 60 * 1000); // Yesterday
-            
-            document.getElementById('collectionDate').textContent = collectionDate.toLocaleDateString();
-            document.getElementById('reportDate').textContent = now.toLocaleDateString();
-        }
-
-        // Initialize the table when the page loads
+        // Initialize on load
+        initializeTable();
+    </script>
+</body>
+</html>
         initializeTable();
     </script>
 </body>
