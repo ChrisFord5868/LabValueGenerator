@@ -2,76 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab Value Generator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1000px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #fff;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
         .controls {
-            margin-bottom: 20px;
             display: flex;
             gap: 10px;
-            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
-        select, button {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
+
         button {
-            background-color: #007bff;
-            color: white;
+            padding: 8px 16px;
             border: none;
+            border-radius: 4px;
+            background: #0070f3;
+            color: white;
             cursor: pointer;
+            transition: background 0.2s;
         }
+
         button:hover {
-            background-color: #0056b3;
+            background: #0051b3;
         }
-        table {
+
+        .preset-btn {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .preset-btn:hover {
+            background: #ddd;
+        }
+
+        .lab-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 20px;
         }
-        th, td {
+
+        .lab-table th, .lab-table td {
             padding: 12px;
-            text-align: left;
             border: 1px solid #ddd;
+            text-align: left;
         }
-        th {
-            background-color: #f8f9fa;
+
+        .lab-table th {
+            background: #f5f5f5;
         }
-        .category-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin: 20px 0 10px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #007bff;
+
+        .lab-table input {
+            width: 100px;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
+
         .abnormal {
             color: red;
+            font-weight: bold;
         }
+
+        .category-header {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+
         @media print {
             .controls {
                 display: none;
             }
-            body {
-                background: white;
-            }
+
             .container {
                 box-shadow: none;
+                padding: 0;
+            }
+
+            .lab-table input {
+                border: none;
+                padding: 0;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .print-footer {
+                margin-top: 40px;
+                border-top: 1px solid #ddd;
+                padding-top: 20px;
             }
         }
     </style>
@@ -79,148 +115,236 @@
 <body>
     <div class="container">
         <h1>Lab Value Generator</h1>
+        
         <div class="controls">
-            <select id="conditionSelect">
-                <option value="normal">Normal Values</option>
-                <option value="sepsis">Sepsis</option>
-                <option value="diabetesDka">DKA</option>
-                <option value="asthma">Asthma</option>
-                <option value="pneumonia">Pneumonia</option>
-                <option value="copd">COPD</option>
-                <option value="chf">CHF</option>
-            </select>
-            <button onclick="generateLabs()">Generate Labs</button>
+            <button class="preset-btn" onclick="loadPreset('normal')">Normal Values</button>
+            <button class="preset-btn" onclick="loadPreset('sepsis')">Sepsis</button>
+            <button class="preset-btn" onclick="loadPreset('dka')">DKA</button>
+            <button class="preset-btn" onclick="loadPreset('asthma')">Asthma</button>
+            <button class="preset-btn" onclick="loadPreset('pneumonia')">Pneumonia</button>
+            <button class="preset-btn" onclick="loadPreset('copd')">COPD</button>
+            <button class="preset-btn" onclick="loadPreset('chf')">CHF</button>
+            <button onclick="generateRandomVariation()">Generate Labs</button>
+            <button onclick="randomizePatient()">New Patient</button>
             <button onclick="window.print()">Print Report</button>
         </div>
-        <div id="labResults"></div>
+
+        <div id="labResults">
+            <div class="print-header">
+                <h2>CLINICAL LABORATORY REPORT</h2>
+                <p>Patient: <span id="patientName"></span></p>
+                <p>DOB: <span id="patientDOB"></span></p>
+                <p>Collection Date: <span id="collectionDate"></span></p>
+                <p>Report Date: <span id="reportDate"></span></p>
+            </div>
+
+            <table class="lab-table">
+                <thead>
+                    <tr>
+                        <th>Test</th>
+                        <th>Result</th>
+                        <th>Reference Range</th>
+                        <th>Units</th>
+                    </tr>
+                </thead>
+                <tbody id="labTableBody">
+                </tbody>
+            </table>
+
+            <div class="print-footer">
+                <p>Laboratory Director: Dr. Jane Smith</p>
+                <p>CLIA #: 12D3456789</p>
+                <p>This report contains confidential health information protected by state and federal law.</p>
+            </div>
+        </div>
     </div>
 
     <script>
-        const labCategories = {
-            "Blood Gas": {
-                ph: { range: "7.35-7.45", unit: "" },
-                paco2: { range: "35-45", unit: "mmHg" },
-                pao2: { range: "80-100", unit: "mmHg" },
-                hco3: { range: "22-26", unit: "mEq/L" },
-                lactate: { range: "0.5-2.2", unit: "mmol/L" }
+        const labData = {
+            'Complete Blood Count': {
+                'WBC': { normal: '7.5', range: '4.5-11.0', units: 'K/µL' },
+                'RBC': { normal: '4.8', range: '4.5-5.5', units: 'M/µL' },
+                'Hemoglobin': { normal: '14.0', range: '13.5-17.5', units: 'g/dL' },
+                'Hematocrit': { normal: '42', range: '41-50', units: '%' },
+                'Platelets': { normal: '250', range: '150-450', units: 'K/µL' }
             },
-            "Complete Blood Count": {
-                wbc: { range: "4.5-11.0", unit: "K/µL" },
-                hemoglobin: { range: "13.5-17.5", unit: "g/dL" },
-                platelets: { range: "150-450", unit: "K/µL" }
+            'Basic Metabolic Panel': {
+                'Sodium': { normal: '140', range: '135-145', units: 'mEq/L' },
+                'Potassium': { normal: '4.0', range: '3.5-5.0', units: 'mEq/L' },
+                'Chloride': { normal: '102', range: '96-106', units: 'mEq/L' },
+                'Bicarbonate': { normal: '24', range: '22-26', units: 'mEq/L' },
+                'BUN': { normal: '15', range: '7-20', units: 'mg/dL' },
+                'Creatinine': { normal: '1.0', range: '0.6-1.2', units: 'mg/dL' },
+                'Glucose': { normal: '100', range: '70-110', units: 'mg/dL' }
             },
-            "Basic Metabolic Panel": {
-                sodium: { range: "135-145", unit: "mEq/L" },
-                potassium: { range: "3.5-5.0", unit: "mEq/L" },
-                chloride: { range: "96-106", unit: "mEq/L" },
-                co2: { range: "23-29", unit: "mEq/L" },
-                bun: { range: "7-20", unit: "mg/dL" },
-                creatinine: { range: "0.6-1.2", unit: "mg/dL" },
-                glucose: { range: "70-100", unit: "mg/dL" },
-                magnesium: { range: "1.7-2.2", unit: "mg/dL" }
+            'Arterial Blood Gas': {
+                'pH': { normal: '7.40', range: '7.35-7.45', units: '' },
+                'pCO2': { normal: '40', range: '35-45', units: 'mmHg' },
+                'pO2': { normal: '95', range: '80-100', units: 'mmHg' },
+                'O2 Saturation': { normal: '98', range: '95-100', units: '%' }
+            },
+            'Cardiac Markers': {
+                'Troponin I': { normal: '0.02', range: '0.00-0.04', units: 'ng/mL' },
+                'BNP': { normal: '50', range: '0-100', units: 'pg/mL' },
+                'CK-MB': { normal: '3.0', range: '0.0-5.0', units: 'ng/mL' }
+            },
+            'Liver Function Tests': {
+                'ALT': { normal: '30', range: '7-56', units: 'U/L' },
+                'AST': { normal: '25', range: '10-40', units: 'U/L' },
+                'Alkaline Phosphatase': { normal: '70', range: '44-147', units: 'U/L' },
+                'Total Bilirubin': { normal: '0.8', range: '0.3-1.2', units: 'mg/dL' }
             }
         };
 
-        function generateRandomNumber(min, max) {
-            return Number((Math.random() * (max - min) + min).toFixed(1));
-        }
+        const firstNames = ['James', 'John', 'Robert', 'Michael', 'William', 'David', 'Richard', 'Joseph', 'Thomas', 'Charles', 'Mary', 'Patricia', 'Jennifer', 'Linda', 'Elizabeth', 'Barbara', 'Susan', 'Jessica', 'Sarah', 'Karen'];
+        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
 
-        function generateLabs() {
-            const condition = document.getElementById('conditionSelect').value;
-            let results = {};
+        const presets = {
+            normal: {},
+            sepsis: {
+                'WBC': '22.0',
+                'Platelets': '90',
+                'Lactate': '4.2',
+                'Creatinine': '2.1'
+            },
+            dka: {
+                'Glucose': '450',
+                'pH': '7.21',
+                'Bicarbonate': '12',
+                'Potassium': '5.8'
+            },
+            asthma: {
+                'pH': '7.47',
+                'Bicarbonate': '28',
+                'pO2': '65'
+            },
+            pneumonia: {
+                'WBC': '18.5',
+                'O2 Saturation': '88'
+            },
+            copd: {
+                'pH': '7.32',
+                'Bicarbonate': '32',
+                'O2 Saturation': '85',
+                'pCO2': '55'
+            },
+            chf: {
+                'BNP': '850',
+                'Creatinine': '1.8',
+                'O2 Saturation': '89'
+            }
+        };
 
-            // Generate base values
-            Object.entries(labCategories).forEach(([category, tests]) => {
-                Object.entries(tests).forEach(([test, details]) => {
-                    const [min, max] = details.range.replace(/[<>]/g, '').split('-').map(Number);
-                    results[test] = generateRandomNumber(min, max);
-                });
-            });
+        function initializeTable() {
+            const tbody = document.getElementById('labTableBody');
+            tbody.innerHTML = '';
 
-            // Modify based on condition
-            switch(condition) {
-                case 'sepsis':
-                    results.lactate = generateRandomNumber(4.0, 12.0);
-                    results.wbc = generateRandomNumber(15.0, 30.0);
-                    results.bun = generateRandomNumber(40, 80);
-                    break;
-                case 'diabetesDka':
-                    results.glucose = generateRandomNumber(300, 600);
-                    results.ph = generateRandomNumber(7.1, 7.3);
-                    results.hco3 = generateRandomNumber(8, 15);
-                    break;
-                case 'asthma':
-                    results.ph = generateRandomNumber(7.45, 7.50);
-                    results.paco2 = generateRandomNumber(25, 35);
-                    results.pao2 = generateRandomNumber(60, 75);
-                    break;
-                case 'pneumonia':
-                    results.wbc = generateRandomNumber(12.0, 20.0);
-                    results.pao2 = generateRandomNumber(60, 75);
-                    break;
-                case 'copd':
-                    results.ph = generateRandomNumber(7.30, 7.35);
-                    results.paco2 = generateRandomNumber(45, 65);
-                    results.hco3 = generateRandomNumber(26, 32);
-                    results.pao2 = generateRandomNumber(50, 65);
-                    break;
-                case 'chf':
-                    results.pao2 = generateRandomNumber(60, 75);
-                    results.bnp = generateRandomNumber(500, 2000);
-                    results.sodium = generateRandomNumber(128, 134);
-                    break;
+            for (const [category, tests] of Object.entries(labData)) {
+                // Add category header
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = `<td colspan="4" class="category-header">${category}</td>`;
+                tbody.appendChild(headerRow);
+
+                // Add tests for this category
+                for (const [test, data] of Object.entries(tests)) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${test}</td>
+                        <td><input type="text" value="${data.normal}" onchange="checkAbnormal(this)"></td>
+                        <td>${data.range}</td>
+                        <td>${data.units}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
             }
 
-            displayResults(results);
+            updateDates();
+            randomizePatient();
         }
 
-        function displayResults(results) {
-            const container = document.getElementById('labResults');
-            container.innerHTML = '<div class="patient-info">' +
-                '<p><strong>Patient:</strong> SIMULATION PATIENT</p>' +
-                '<p><strong>Date:</strong> ' + new Date().toLocaleDateString() + '</p>' +
-                '<p><strong>Time:</strong> ' + new Date().toLocaleTimeString() + '</p>' +
-                '</div>';
+        function randomDate(start, end) {
+            return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+        }
 
-            Object.entries(labCategories).forEach(([category, tests]) => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.innerHTML = `<div class="category-title">${category}</div>`;
-                
-                const table = document.createElement('table');
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th>Test</th>
-                            <th>Result</th>
-                            <th>Flag</th>
-                            <th>Units</th>
-                            <th>Reference Range</th>
-                        </tr>
-                    </thead>
-                `;
+        function randomizePatient() {
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            document.getElementById('patientName').textContent = `${lastName}, ${firstName}`;
 
-                const tbody = document.createElement('tbody');
-                Object.entries(tests).forEach(([test, details]) => {
-                    const value = results[test];
-                    const [min, max] = details.range.replace(/[<>]/g, '').split('-').map(Number);
-                    const isAbnormal = min && max && (value < min || value > max);
-                    
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${test.replace(/_/g, ' ').toUpperCase()}</td>
-                            <td class="${isAbnormal ? 'abnormal' : ''}">${value.toFixed(1)}</td>
-                            <td class="abnormal">${isAbnormal ? (value < min ? 'L' : 'H') : ''}</td>
-                            <td>${details.unit}</td>
-                            <td>${details.range}</td>
-                        </tr>
-                    `;
-                });
+            // Generate random DOB for adult (18-85 years old)
+            const end = new Date();
+            end.setFullYear(end.getFullYear() - 18);
+            const start = new Date();
+            start.setFullYear(start.getFullYear() - 85);
+            const dob = randomDate(start, end);
+            document.getElementById('patientDOB').textContent = dob.toLocaleDateString();
+        }
 
-                table.appendChild(tbody);
-                categoryDiv.appendChild(table);
-                container.appendChild(categoryDiv);
+        function loadPreset(preset) {
+            const presetValues = presets[preset];
+            const tbody = document.getElementById('labTableBody');
+            
+            // Reset to normal values first
+            initializeTable();
+
+            // Apply preset values
+            for (const [test, value] of Object.entries(presetValues)) {
+                const rows = tbody.getElementsByTagName('tr');
+                for (const row of rows) {
+                    if (row.cells[0].textContent === test) {
+                        const input = row.cells[1].querySelector('input');
+                        input.value = value;
+                        checkAbnormal(input);
+                        break;
+                    }
+                }
+            }
+        }
+
+        function generateRandomVariation() {
+            const inputs = document.querySelectorAll('.lab-table input');
+            inputs.forEach(input => {
+                const currentValue = parseFloat(input.value);
+                const variation = (Math.random() - 0.5) * 0.1 * currentValue;
+                input.value = (currentValue + variation).toFixed(2);
+                checkAbnormal(input);
             });
         }
+
+        function checkAbnormal(input) {
+            const test = input.parentElement.parentElement.cells[0].textContent;
+            let range;
+            
+            // Find the range in the nested structure
+            for (const category of Object.values(labData)) {
+                if (test in category) {
+                    range = category[test].range;
+                    break;
+                }
+            }
+            
+            if (range) {
+                const [min, max] = range.split('-').map(Number);
+                const value = parseFloat(input.value);
+                
+                if (value < min || value > max) {
+                    input.parentElement.classList.add('abnormal');
+                } else {
+                    input.parentElement.classList.remove('abnormal');
+                }
+            }
+        }
+
+        function updateDates() {
+            const now = new Date();
+            const collectionDate = new Date(now - 24 * 60 * 60 * 1000); // Yesterday
+            
+            document.getElementById('collectionDate').textContent = collectionDate.toLocaleDateString();
+            document.getElementById('reportDate').textContent = now.toLocaleDateString();
+        }
+
+        // Initialize the table when the page loads
+        initializeTable();
     </script>
 </body>
 </html>
